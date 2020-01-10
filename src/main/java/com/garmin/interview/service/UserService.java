@@ -1,8 +1,8 @@
 package com.garmin.interview.service;
 
-import com.garmin.interview.dto.CompositeUser;
+import com.garmin.interview.dto.FitPayUser;
 
 public interface UserService
 {
-	CompositeUser getCompositeInfo(String userId);
+	FitPayUser getUserById(String userId);
 }

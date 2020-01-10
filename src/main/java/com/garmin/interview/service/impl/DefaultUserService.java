@@ -6,24 +6,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import com.garmin.interview.dto.CompositeUser;
 import com.garmin.interview.dto.FitPayUser;
+import com.garmin.interview.exception.UserDoesNotExist;
 import com.garmin.interview.service.UserService;
+import com.garmin.interview.util.HttpHeader;
 
 @Service
 public class DefaultUserService implements UserService
 {
 	private static final Logger LOG = LoggerFactory.getLogger(DefaultUserService.class);
-	@Value("${fitpay.oauth.token}")
-	private String token;
 	@Value("${fitpay.users.url}")
 	private String url;
+	@Value("${fitpay.oauth.token}")
+	private String token;
 	private final RestTemplate restTemplate;
 
 	public DefaultUserService(final RestTemplate restTemplate)
@@ -32,26 +34,28 @@ public class DefaultUserService implements UserService
 	}
 
 	@Override
-	public CompositeUser getCompositeInfo(final String userId)
+	public FitPayUser getUserById(final String userId)
 	{
 		final String requestUrl = String.format(this.url, userId);
 		LOG.info("URL for request: {}", requestUrl);
 
-		final ResponseEntity<FitPayUser> user = restTemplate.exchange(
-				URI.create(requestUrl),
-				HttpMethod.GET,
-				new HttpEntity<>(getHttpHeaders()),
-				FitPayUser.class);
-		LOG.info("User: {}", user.getBody());
-
-		final CompositeUser compositeUser = new CompositeUser();
-		return compositeUser;
-	}
-
-	private HttpHeaders getHttpHeaders()
-	{
-		final HttpHeaders headers = new HttpHeaders();
-		headers.add("Authorization","Bearer " + token);
-		return headers;
+		try
+		{
+			final ResponseEntity<FitPayUser> response = restTemplate.exchange(
+					URI.create(requestUrl),
+					HttpMethod.GET,
+					new HttpEntity<>(HttpHeader.forToken(token)),
+					FitPayUser.class);
+			return response.getBody();
+		}
+		catch (final HttpClientErrorException e)
+		{
+			LOG.error("Encountered an error while processing the request", e);
+			if (e.getStatusCode().equals(HttpStatus.BAD_REQUEST))
+			{
+				throw new UserDoesNotExist(userId);
+			}
+			throw e;
+		}
 	}
 }
