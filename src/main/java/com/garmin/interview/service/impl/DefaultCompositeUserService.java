@@ -1,14 +1,13 @@
 package com.garmin.interview.service.impl;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.garmin.interview.dto.CompositeUser;
-import com.garmin.interview.dto.CreditCard;
-import com.garmin.interview.dto.Device;
 import com.garmin.interview.dto.FitPayUser;
 import com.garmin.interview.service.CompositeUserService;
 import com.garmin.interview.service.CreditCardService;
@@ -36,8 +35,8 @@ public class DefaultCompositeUserService implements CompositeUserService
 	public CompositeUser getCompositeInfo(final String userId)
 	{
 		final FitPayUser user = userService.getUserById(userId);
-		final Collection<Device> devices = deviceService.getDevicesForUser(user);
-		final Collection<CreditCard> creditCards = creditCardService.getCreditCardsForUser(user);
+		final Collection<Map<String, Object>> devices = deviceService.getDevicesForUser(user);
+		final Collection<Map<String, Object>> creditCards = creditCardService.getCreditCardsForUser(user);
 
 		final CompositeUser compositeUser = new CompositeUser()
 				.withUserId(user.getUserId())

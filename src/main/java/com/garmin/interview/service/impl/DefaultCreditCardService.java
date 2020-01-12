@@ -2,6 +2,7 @@ package com.garmin.interview.service.impl;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.garmin.interview.dto.CollectionEntity;
-import com.garmin.interview.dto.CreditCard;
 import com.garmin.interview.dto.FitPayUser;
 import com.garmin.interview.service.CreditCardService;
 import com.garmin.interview.util.HttpHeader;
@@ -32,7 +32,7 @@ public class DefaultCreditCardService implements CreditCardService
 	}
 
 	@Override
-	public Collection<CreditCard> getCreditCardsForUser(final FitPayUser user)
+	public Collection<Map<String, Object>> getCreditCardsForUser(final FitPayUser user)
 	{
 		final String requestUrl = user.get_links().getCreditCards().getHref();
 		LOG.info("Credit cards url for user: {}", requestUrl);
@@ -43,7 +43,7 @@ public class DefaultCreditCardService implements CreditCardService
 				new HttpEntity<>(HttpHeader.forToken(token)),
 				CollectionEntity.class);
 
-		final Collection<CreditCard> devices = response.getBody().getResults();
+		final Collection<Map<String, Object>> devices = response.getBody().getResults();
 		LOG.info("Credit cards for user: {}", devices);
 		return devices;
 	}

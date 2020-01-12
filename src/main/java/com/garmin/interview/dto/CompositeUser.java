@@ -1,6 +1,7 @@
 package com.garmin.interview.dto;
 
 import java.util.Collection;
+import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,6 +15,6 @@ import lombok.With;
 public class CompositeUser
 {
 	private String userId;
-	private Collection<CreditCard> creditCards;
-	private Collection<Device> devices;
+	private Collection<Map<String, Object>> creditCards;
+	private Collection<Map<String, Object>> devices;
 }
