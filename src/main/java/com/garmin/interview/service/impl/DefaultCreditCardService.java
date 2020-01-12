@@ -1,32 +1,24 @@
 package com.garmin.interview.service.impl;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import com.garmin.interview.dto.CollectionEntity;
 import com.garmin.interview.dto.FitPayUser;
 import com.garmin.interview.service.CreditCardService;
-import com.garmin.interview.util.HttpHeader;
 
 @Service
 public class DefaultCreditCardService implements CreditCardService
 {
 	private static final Logger LOG = LoggerFactory.getLogger(DefaultCreditCardService.class);
-	@Value("${fitpay.oauth.token}")
-	private String token;
-	private final RestTemplate restTemplate;
+	private final OAuth2RestTemplate restTemplate;
 
-	public DefaultCreditCardService(final RestTemplate restTemplate)
+	public DefaultCreditCardService(final OAuth2RestTemplate restTemplate)
 	{
 		this.restTemplate = restTemplate;
 	}
@@ -37,14 +29,10 @@ public class DefaultCreditCardService implements CreditCardService
 		final String requestUrl = user.get_links().getCreditCards().getHref();
 		LOG.info("Credit cards url for user: {}", requestUrl);
 
-		final ResponseEntity<CollectionEntity> response = restTemplate.exchange(
-				URI.create(requestUrl),
-				HttpMethod.GET,
-				new HttpEntity<>(HttpHeader.forToken(token)),
-				CollectionEntity.class);
+		final var response = restTemplate.getForEntity(requestUrl, CollectionEntity.class);
 
 		final Collection<Map<String, Object>> devices = response.getBody().getResults();
-		LOG.info("Credit cards for user: {}", devices);
+		LOG.debug("Credit cards for user: {}", devices);
 		return devices;
 	}
 }

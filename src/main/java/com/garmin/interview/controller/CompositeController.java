@@ -49,6 +49,7 @@ public class CompositeController
 	{
 		if (!Strings.isBlank(state))
 		{
+			LOG.info("Only returning credit cards with state: {} for userId: {}", state, compositeuser.getUserId());
 			final List<Map<String, Object>> requested = filterCollection(compositeuser.getCreditCards(), state);
 			compositeuser.setCreditCards(requested);
 		}
@@ -58,12 +59,14 @@ public class CompositeController
 	{
 		if (!Strings.isBlank(state))
 		{
+			LOG.info("Only returning devices with state: {} for userId: {}", state, compositeuser.getUserId());
 			final List<Map<String, Object>> requested = filterCollection(compositeuser.getDevices(), state);
 			compositeuser.setDevices(requested);
 		}
 	}
 
-	private List<Map<String, Object>> filterCollection(final Collection<Map<String, Object>> collectionToFilter, final String state)
+	private List<Map<String, Object>> filterCollection(final Collection<Map<String, Object>> collectionToFilter,
+	                                                   final String state)
 	{
 		return collectionToFilter.stream()
 		                         .filter(e -> e.get(STATE).equals(state))
