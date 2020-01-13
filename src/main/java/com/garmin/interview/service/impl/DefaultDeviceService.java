@@ -1,10 +1,12 @@
 package com.garmin.interview.service.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Service;
 
@@ -31,8 +33,26 @@ public class DefaultDeviceService implements DeviceService
 
 		final var response = restTemplate.getForEntity(requestUrl, CollectionEntity.class);
 
-		final Collection<Map<String, Object>> devices = response.getBody().getResults();
+		final CollectionEntity collectionEntity = response.getBody();
+
+		final Collection<Map<String, Object>> devices = collectionEntity.getResults();
 		LOG.debug("Devices for user: {}", devices);
-		return devices;
+
+		final Collection<Map<String, Object>> allDevices = new ArrayList<>(devices);
+		getAllPages(allDevices, collectionEntity);
+
+		return allDevices;
+	}
+
+	private void getAllPages(final Collection<Map<String, Object>> allDevices, final CollectionEntity collectionEntity)
+	{
+		while (collectionEntity.get_links().getNext() != null)
+		{
+			final String nextPageUrl = collectionEntity.get_links().getNext().getHref();
+			LOG.info("Getting next page of devices from: {}", nextPageUrl);
+			final ResponseEntity<CollectionEntity> nextPage = restTemplate.getForEntity(
+					nextPageUrl, CollectionEntity.class);
+			allDevices.addAll(nextPage.getBody().getResults());
+		}
 	}
 }

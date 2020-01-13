@@ -1,10 +1,12 @@
 package com.garmin.interview.service.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.stereotype.Service;
 
@@ -31,8 +33,25 @@ public class DefaultCreditCardService implements CreditCardService
 
 		final var response = restTemplate.getForEntity(requestUrl, CollectionEntity.class);
 
-		final Collection<Map<String, Object>> devices = response.getBody().getResults();
-		LOG.debug("Credit cards for user: {}", devices);
-		return devices;
+		final CollectionEntity collectionEntity = response.getBody();
+		final Collection<Map<String, Object>> creditCards = collectionEntity.getResults();
+		LOG.debug("Credit cards for user: {}", creditCards);
+
+		final Collection<Map<String, Object>> allCreditCards = new ArrayList<>(creditCards);
+		getAllPages(allCreditCards, collectionEntity);
+
+		return allCreditCards;
+	}
+
+	private void getAllPages(final Collection<Map<String, Object>> allCreditCards, final CollectionEntity collectionEntity)
+	{
+		while (collectionEntity.get_links().getNext() != null)
+		{
+			final String nextPageUrl = collectionEntity.get_links().getNext().getHref();
+			LOG.info("Getting next page of credit cards from: {}", nextPageUrl);
+			final ResponseEntity<CollectionEntity> nextPage = restTemplate.getForEntity(
+					nextPageUrl, CollectionEntity.class);
+			allCreditCards.addAll(nextPage.getBody().getResults());
+		}
 	}
 }

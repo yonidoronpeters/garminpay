@@ -6,5 +6,5 @@ import lombok.Data;
 public class FitPayUser
 {
 	private String userId;
-	private HyperTextLinks _links;
+	private UserLinks _links;
 }
