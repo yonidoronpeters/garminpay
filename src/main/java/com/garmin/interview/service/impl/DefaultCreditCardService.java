@@ -45,13 +45,15 @@ public class DefaultCreditCardService implements CreditCardService
 
 	private void getAllPages(final Collection<Map<String, Object>> allCreditCards, final CollectionEntity collectionEntity)
 	{
-		while (collectionEntity.get_links().getNext() != null)
+		CollectionEntity curr = collectionEntity;
+		while (curr.get_links().getNext() != null)
 		{
-			final String nextPageUrl = collectionEntity.get_links().getNext().getHref();
+			final String nextPageUrl = curr.get_links().getNext().getHref();
 			LOG.info("Getting next page of credit cards from: {}", nextPageUrl);
 			final ResponseEntity<CollectionEntity> nextPage = restTemplate.getForEntity(
 					nextPageUrl, CollectionEntity.class);
 			allCreditCards.addAll(nextPage.getBody().getResults());
+			curr = nextPage.getBody();
 		}
 	}
 }

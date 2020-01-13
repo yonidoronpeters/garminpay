@@ -46,13 +46,15 @@ public class DefaultDeviceService implements DeviceService
 
 	private void getAllPages(final Collection<Map<String, Object>> allDevices, final CollectionEntity collectionEntity)
 	{
-		while (collectionEntity.get_links().getNext() != null)
+		CollectionEntity current = collectionEntity;
+		while (current.get_links().getNext() != null)
 		{
-			final String nextPageUrl = collectionEntity.get_links().getNext().getHref();
+			final String nextPageUrl = current.get_links().getNext().getHref();
 			LOG.info("Getting next page of devices from: {}", nextPageUrl);
 			final ResponseEntity<CollectionEntity> nextPage = restTemplate.getForEntity(
 					nextPageUrl, CollectionEntity.class);
 			allDevices.addAll(nextPage.getBody().getResults());
+			current = nextPage.getBody();
 		}
 	}
 }
